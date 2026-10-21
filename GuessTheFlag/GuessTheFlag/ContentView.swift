@@ -8,10 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var roundNumber = 1
+    @State private var userScore = 0
     @State private var showingScore = false
+    @State private var gameStop = false
     @State private var scoreTitle = ""
     @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"].shuffled()
     @State private var correctAnswer = Int.random(in: 0...2)
+    
     var body: some View {
         ZStack {
             RadialGradient(stops: [
@@ -26,7 +30,10 @@ struct ContentView: View {
                     .foregroundStyle(.white)
                 Spacer()
                 Spacer()
-                Text("Score: ???")
+                Text("Score: \(userScore)")
+                    .foregroundStyle(.white)
+                    .font(.title.bold())
+                Text("Round: \(roundNumber)")
                     .foregroundStyle(.white)
                     .font(.title.bold())
                 Spacer()
@@ -59,22 +66,43 @@ struct ContentView: View {
         .alert(scoreTitle, isPresented: $showingScore) {
             Button("Continue", action: askQuestion)
         } message: {
-            Text("Your score is ???")
+            Text("Your score is \(userScore)")
+        }
+        .alert("Game Over", isPresented: $gameStop) {
+            Button("Restart", action: reset)
+        } message: {
+            Text("Your final score is: \(userScore)")
         }
     }
+    
     func flagTapped(_ number: Int) {
-        if number==correctAnswer {
+        if number == correctAnswer {
             scoreTitle = "Correct"
+            userScore += 1
         } else {
-            scoreTitle = "Wrong"
+            scoreTitle = "Wrong! That's the flag of \(countries[number])"
         }
         
         showingScore = true
+        
     }
+    
     func askQuestion() {
+        if roundNumber==8 {
+            gameStop=true
+            return
+        }
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        roundNumber+=1
     }
+    
+    func reset() {
+        askQuestion()
+        roundNumber = 1
+        userScore = 0
+    }
+    
 }
 
 #Preview {
